@@ -6,6 +6,7 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 from HyperspectralDatasetLoader import HyperspectralDatasetLoader
 from CompressionModel import CompressionModel
+import numpy as np
 
 def save_model(model, save_path="trained_model_weights.pkl"):
     """Saves the model weights using pickle."""
@@ -25,6 +26,7 @@ def train_compression_model(dataset_dir, num_epochs=10, learning_rate=0.001):
     # Load dataset
     dataset = HyperspectralDatasetLoader(dataset_dir)
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=4, shuffle=True)
+    
     
     # Initialize model and optimizer
     model = CompressionModel(in_channels=204)
@@ -56,13 +58,20 @@ def compress_and_decompress_image(model, image_tensor):
         # Display original and reconstructed images
         original_image = image_tensor.cpu().numpy().transpose(1, 2, 0)
         reconstructed_image = reconstructed.transpose(1, 2, 0)
+        compressed_image = compressed.transpose(1, 2, 0)
         
-        fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+        fig, axes = plt.subplots(1, 3, figsize=(10, 5))
         axes[0].imshow(original_image[..., 0], cmap="gray")
         axes[0].set_title("Original Image")
-        axes[1].imshow(reconstructed_image[..., 0], cmap="gray")
-        axes[1].set_title("Reconstructed Image")
+        axes[1].imshow(compressed_image[..., 0], cmap="gray")
+        axes[1].set_title("Compressed Image")
+        axes[2].imshow(reconstructed_image[..., 0], cmap="gray")
+        axes[2].set_title("Reconstructed Image")
         plt.show()
+
+def compress_and_decompress_images(model, images_tensor):
+    for image in images_tensor:
+        compress_and_decompress_image(model, image_tensor=image)
 
 # Example usage
 if __name__ == "__main__":
@@ -77,4 +86,11 @@ if __name__ == "__main__":
 
     #вот это чтобы юзать натренированую модельку
     example_image = torch.rand((204, 64, 64))  # Replace with actual image tensor
-    compress_and_decompress_image(model, example_image)
+    dataset = HyperspectralDatasetLoader(dataset_path)
+    image_0 = dataset.__getitem__(0)
+    image_1 = dataset.__getitem__(1)
+    image_2 = dataset.__getitem__(2)
+
+    # Stack images into a NumPy array for testing
+    array = dataset.__gettensor__()
+    compress_and_decompress_images(model, array)

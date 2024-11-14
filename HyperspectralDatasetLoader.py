@@ -56,3 +56,11 @@ class HyperspectralDatasetLoader(Dataset):
             tensor_image = tensor_image.permute(2, 0, 1)  # Rearrange to [channels, height, width]
 
         return tensor_image
+
+    def __gettensor__(self, number = 0):
+        #дает матрицу со всеми фотками если 0, с количеством фоток если не ноль
+        array = torch.zeros((len(self.image_paths), 204, 512, 512))
+        for i in range(len(self.image_paths)):
+            array[i] = self.__getitem__(i)
+        
+        return array
